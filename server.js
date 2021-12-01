@@ -15,5 +15,11 @@ app.get('/', (req, res)=>{
 //라우트 미들웨어
 app.use('/api/products', productRoutes);
 
-app.listen(PORT); //HTTP 서버시작
-console.log('서버런')
+// app.listen(PORT); //HTTP 서버시작
+// console.log('서버런')
+
+app.use((error , req, res, next)=>{
+    res.status(500).json({message:error.message});
+})
+
+module.exports = app;
