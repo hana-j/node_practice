@@ -4,11 +4,13 @@ const httpMocks = require('node-mocks-http');
 const newProduct = require('../data/new-product.json');
 const Product = require('../../models/Product');
 const allProducts = require('../data/all-products.json');
+const { request } = require('../../server');
 
 productModel.create = jest.fn();
 productModel.find =jest.fn();
 productModel.findById = jest.fn();
 productModel.findByIdAndUpdate = jest.fn();
+productModel.findByIdAndDelete = jest.fn();
 
 const productId = "dgaeg9dgagdaaaa"
 let req, res, next; //전역공간에 할당 
@@ -134,5 +136,39 @@ describe("Product Contorller Update", ()=>{
         await productController.updateProduct(req, res, next);
         expect(res.statusCode).toBe(404);
         expect(res._isEndCalled()).toBeTruthy(); //product.js에서 .send()해서 값을 보내줄경우에 true로 테스트 통과 it s
+    }) 
+})
+describe("Product Controller Delete", ()=>{
+    it("should have a deletProduct function", ()=>{
+        expect(typeof productController.deleteProduct).toBe("function");
+    })
+    it("should call ProductModel.findByIdAndDelete", async()=>{
+        req.params.productId = productId;
+        await productController.deleteProduct(req, res, next)
+        expect(productModel.findByIdAndDelete).toBeCalledWith(productId);
+    })
+    it("should return 200 response", async()=>{
+        let deletedProduct = {
+            name:"deletedProduct",
+            description :"it is deleted"
+        }
+        productModel.findByIdAndDelete.mockReturnValue(deletedProduct)
+        await productController.deleteProduct(req, res, next);
+        expect(res.statusCode).toBe(200);
+       
+        expect(res._isEndCalled()).toBeTruthy();
+    })
+    it("should handle 404 when item dosent exits", async()=>{
+        productModel.findByIdAndDelete.mockReturnValue(null);
+        await productController.deleteProduct(req, res, next);
+        expect(res.statusCode).toBe(404);
+        expect(res._isEndCalled()).toBeTruthy();
+    })
+    it("should handle errors", async()=>{
+        const errorMessage = {message:"Error deleing"}
+        const rejectedPromise = Promise.reject(errorMessage)
+        productModel.findByIdAndDelete.mockReturnValue(rejectedPromise);
+        await productController.deleteProduct(req, res,next);
+        expect(next).toHaveBeenCalledWith(errorMessage)
     })
 })
