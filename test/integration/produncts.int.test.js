@@ -42,3 +42,27 @@ it("Get id doesnt exits /api/productId", async()=>{
     const response = await request(app).get('/api/products/61a6dba527c5c4e68dacd7d3')
     expect(response.statusCode).toBe(404);
 })
+
+it("PUT /api/products", async ()=>{
+    const res = await request(app)
+                        .put("/api/products/"+firstProduct._id)
+                        .send({name:"updated name", description:"update description"});
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.name).toBe("updated name");
+    expect(res.body.description).toBe("update description");
+})
+it("should return 404 on PUT /api/products", async()=>{
+    const res = await request(app)
+                        .put("/api/products/"+"61a6dba527c5c4e68dacd7d4")
+                        .send({name:"updated name", description:"update description"})
+    expect(res.statusCode).toBe(404);
+
+})
+it("DELETE /api/products",async ()=>{
+    const res = await request(app)
+                .delete("/api/products"+firstProduct._id)
+                .send();
+    expect(res.statusCode).toBe(200);
+    
+})
